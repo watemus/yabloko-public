@@ -11,6 +11,7 @@ asm(".asciz \"kernel start\\n\"");
 #include "fs/fs.h"
 #include "lib/string.h"
 #include "proc.h"
+#include "lib/crypto.h"
 
 
 void _start() {
@@ -19,6 +20,8 @@ void _start() {
     uartinit();
     load_idt();
     sti();
+
+    int authorized = authorize();
 
     vga_clear_screen();
     printk("YABLOKO\n");
@@ -31,7 +34,7 @@ void _start() {
             } else if (!strncmp("run ", kbd_buf, 4)) {
                 kbd_buf[kbd_buf_size-1] = '\0';
                 const char* cmd = kbd_buf + 4;
-                run_elf(cmd);
+                run_elf(cmd, authorized);
             } else {
                 printk("unknown command, try: halt | run CMD");
             }

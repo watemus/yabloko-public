@@ -1,5 +1,7 @@
 GDB=gdb
 OBJCOPY=objcopy
+PASSWORD=123456
+INITIAL_VALUE=123
 
 ifeq ($(shell uname -s),Darwin)
 AS=x86_64-elf-as
@@ -25,7 +27,7 @@ endif
 
 OBJECTS = kernel.o console.o drivers/vga.o drivers/uart.o drivers/keyboard.o \
 	cpu/idt.o cpu/gdt.o cpu/swtch.o cpu/vectors.o lib/mem.o proc.o lib/string.o \
-	fs/fs.o
+	fs/fs.o drivers/ata.o lib/crypto.o
 
 run: image.bin
 	qemu-system-i386 -drive format=raw,file=$< -serial mon:stdio
@@ -85,7 +87,7 @@ debug-nox: image.bin
 		-ex "continue"
 
 fs.img: kernel.bin tools/mkfs user/false user/greet user/div0
-	tools/mkfs $@ $< user/false user/greet user/div0
+	tools/mkfs $@ $< user/false n user/greet y user/div0 y $(INITIAL_VALUE) $(PASSWORD)
 
 LDFLAGS=-m elf_i386
 

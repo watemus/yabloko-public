@@ -18,3 +18,19 @@ void memset(void* b, char c, size_t len) {
         p[i] = c;
     }
 }
+
+int atoun(const char* s, unsigned* num, int n) {
+    int ans = 0;
+    while (*s != '\0' && n > 0) {
+        ans *= 10;
+        if ('0' <= *s && *s <= '9') {
+            ans += *s - '0';
+        } else {
+            return -1;
+        }
+        ++s;
+        --n;
+    }
+    *num = ans;
+    return 0;
+}

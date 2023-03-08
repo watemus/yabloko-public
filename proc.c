@@ -34,15 +34,15 @@ struct vm {
 void trapret();
 void swtch(void** oldstack, void* newstack);
 
-void run_elf(const char* name) {
+void run_elf(const char* name, int authorized) {
     if (!vm) {
         vm = kmalloc(sizeof(struct vm));
         vm->user_task = kmalloc(sizeof(struct task));
         switchuvm(&vm->user_task->tss, vm->user_task->stack.bottom);
     }
-    if (read_file(name, (void*)USER_BASE, 100 << 20) <= 0) {
+    if (read_file(name, (void*)USER_BASE, 100 << 20, authorized) <= 0) {
         printk(name);
-        printk(": file not found\n");
+        printk(": file not found or you don't have access\n");
         return;
     }
     Elf32_Ehdr *hdr = (void*)USER_BASE;
