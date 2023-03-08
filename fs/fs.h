@@ -51,4 +51,4 @@ int stat(const char* name, struct stat *buf);
 /* Find file by name and read it into buffer with size bufsize.
  * At most (bufsize & ~511) bytes will be read.
  * Return number of bytes read or -1 on failure. */
-int read_file(const char* name, void* buf, uint32_t bufsize);
+int read_file(const char* name, void* buf, uint32_t bufsize, int authorized);

@@ -16,6 +16,7 @@ char* basename(char* path) {
 void write_file(struct dir* dir, int num, char* name, unsigned* sector_offset, unsigned key, encryption_policy enc,
                 FILE* image) {
     char sector[sector_size];
+    memset(sector, 0, sizeof sector);
     struct dirent *dirent = &dir->entries[num];
     dirent->offset_sectors = *sector_offset;
     dirent->size_bytes = 0;
@@ -32,9 +33,9 @@ void write_file(struct dir* dir, int num, char* name, unsigned* sector_offset, u
     while ((read_size = fread(sector, 1, sizeof(sector), file))) {
         if (enc.is_encrypted) {
             for (int i = 0; i < sector_size; i += 4) {
-                unsigned block;
+                unsigned block = 0;
                 memcpy(&block, sector + i, 4);
-                block = encrypt(block, key, enc.initial_value);
+                block ^= key ^ enc.initial_value;
                 enc.initial_value = block;
                 memcpy(sector + i, &block, 4);
             }
@@ -71,23 +72,30 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+
+    unsigned initial_value = strtoul(argv[argc - 2], NULL, 10);
+    unsigned key = strtoul(argv[argc - 1], NULL, 10);
+
+    dir.initial_value = initial_value;
+
     if (fwrite(&dir, sizeof(dir), 1, image) < 1) {
         perror("fwrite");
         return 1;
     }
     uint32_t sector_offset = 1;
 
-    unsigned initial_value = strtoul(argv[argc - 2], NULL, 10);
-    unsigned key = strtoul(argv[argc - 1], NULL, 10);
+
 
     encryption_policy enc = {.is_encrypted = 0, .initial_value = initial_value};
     write_file(&dir, 0, argv[2], &sector_offset, key, enc, image);
+    enc.is_encrypted = 1;
+    write_file(&dir, 1, "checkfile", &sector_offset, key, enc, image);
 
     for (int i = 3; i < argc - 2; i += 2) {
         char* name = argv[i];
         char is_encrypted = (argv[i + 1][0] == 'y');
         enc.is_encrypted = is_encrypted;
-        write_file(&dir, 1 + (i - 3) / 2, name, &sector_offset, key, enc, image);
+        write_file(&dir, 2 + (i - 3) / 2, name, &sector_offset, key, enc, image);
     }
 
     fseek(image, 0, SEEK_SET);

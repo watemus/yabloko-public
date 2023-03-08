@@ -38,8 +38,6 @@ void read_sectors_ATA_PIO(uint32_t target_address, uint32_t LBA, uint8_t sector_
 	port_byte_out(0x1F7, 0x20); //Send the read command
 
 	uint16_t *target = (uint16_t*) target_address;
-    uint32_t key;
-    asm volatile("mov cr3, %0" : "rm"(key));
 
 	for (int j = 0; j < sector_count; j++)
 	{
@@ -48,9 +46,15 @@ void read_sectors_ATA_PIO(uint32_t target_address, uint32_t LBA, uint8_t sector_
 		for (int i = 0; i < 256; i++) {
             target[i] = port_word_in(0x1F0);
             if (i % 2 == 1 && enc.is_encrypted) {
-                uint32_t *block = (uint32_t*)(target - 1);
-                *block = decrypt(*block, key, enc.initial_value);
+                uint32_t *block = (uint32_t*)(target + i - 1);
+                int val = *block ^ enc.initial_value;
+                asm volatile ("mov %%cr3, %%eax;"
+                              "xor %%eax, %%edx;"
+                : "=d"(val)
+                : "d"(val)
+                : "eax");
                 enc.initial_value = *block;
+                *block = val;
             }
         }
 		target += 256;
