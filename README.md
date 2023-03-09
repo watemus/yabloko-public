@@ -1,26 +1,24 @@
-# Yet Another BootLoader, OS Kernel and Other stuff
+# YABLOKO с шифрованием диска
+### Теперь в yabloko можно шифровать ваши ELF бинарники!
+Шифрование происходит в CBC mode c обычным XOR шифром. 
 
-## Quickstart:
-```
-$ ./setup.sh
-$ make
-```
-## How to run using llvm
+### Перед запуском:
+В mkfs необходимо специфицировать:
+- INITIAL_VALUE (или начальное значение или $C_0$)
+- PASSWORD (или ключ или KEY)
+- Бинарники, которые шифровать (указывается как y/n)
 
-You can use this way even if you have windows. You need to install llvm and qemu. 
-Check that executables `clang`, `ld.lld`, `qemu-system-i386` available from your terminal/console.
+Пример можно увидеть в Makefile в секции fs.img
 
-```
-make LLVM=on
-```
+### Во время запуска
 
-## How to debug in my favorite IDE
+При запуске попросят ввести PASSWORD. Нужно сделать одно из двух:
+- Ввести правильный PASSWORD (проверка будет успешна если checkfile дешифруется правильно)
+- Войти как guest.
 
-Start debug server using command `make debug-server` or `make debug-server-nox` if you don't want to see gui, and 
-then connect using remote gdb option to localhost:1234 (symbols file is kernel.bin)
+### Во время работы
 
-## Includes code from:
-* https://github.com/mit-pdos/xv6-public
-* https://github.com/FRosner/FrOS
-* https://github.com/dhavalhirdhav/LearnOS
-* https://wiki.osdev.org
+- Если при запуске был указан правильный PASSWORD, то можно запускать любой ELF бинарник (он будет дешифроваться на лету)
+- Иначе можно запускать только незашифрованные бинарники
+
+### Чтобы убедиться, что бинарь зашифрован достаточно посмотреть соответствующие сектора в fs.img и увидеть там "мусор"

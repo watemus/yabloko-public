@@ -87,7 +87,7 @@ debug-nox: image.bin
 		-ex "continue"
 
 fs.img: kernel.bin tools/mkfs user/false user/greet user/div0
-	tools/mkfs $@ $< user/false n user/greet y user/div0 y $(INITIAL_VALUE) $(PASSWORD)
+	tools/mkfs $@ $< user/false y user/greet y user/div0 y $(INITIAL_VALUE) $(PASSWORD)
 
 LDFLAGS=-m elf_i386
 
